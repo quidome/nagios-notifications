@@ -24,8 +24,9 @@ Host text: "<hostname> changed into state: <state> : <output>"
 
 */
 
-
 // Load modules
+// load pushbullet library
+var PushBullet = require('pushbullet');
 
 // Load optimist, read/parse command line arguments
 var argv = require('optimist')
@@ -38,20 +39,80 @@ var argv = require('optimist')
 * contact: extract adresses
 * message: distinct between host and service
 * message: send
-
 */
 
-
-
 // Handle input parameters
-// All arguments were given
+var addresses = argv.A.split(";");
+var host = argv.H;
+var type = argv.T;
+var description = argv.D;
+var state = argv.S;
+var output = argv.O;
 
-// console.dir(addresses);
 
-// Create notification object
-console.dir(argv);
+// Iterate over addresses
+addresses.map( function(address) {
+	// scanning the addresses one by one
+	if (address) {
+		// console.log("we've got an address");
+		// console.log("address: %s", address);
 
-argv.A.forEach(function(val) {
-	console.log(val);
+		// servicename is in the part before : 
+		var parts = address.split(":");
+		var service = parts[0];
+		var destination = parts[1];
 
-})
+		// console.log("service: %s", service);
+		// console.log("destination: %s", destination);
+
+		if (service == 'pushbullet') {
+			// we've got a winner
+			var s = destination.split(",");
+			var apikey = s[0];
+			var deviceId = s[1];
+			// console.log("push message to:\nkey: %s\ndevice: %s\n", apikey, deviceId);
+
+			// this script is but-ugly but I have the vars :)
+			var noteTitle;
+			var noteBody;
+			// prepare the message
+			if (type == 'host') {
+				noteTitle = 'Host status update';
+				noteBody = host.concat(' changed into state: ', state, ' : ', output);
+			} else if (type == 'service') {
+				noteTitle = 'Host status update';
+				noteBody = host.concat(' changed into state: ', state, ' for service: ', description, ': ', output);				
+			} else {
+				noteTitle = 'unknown type';
+				noteBody = host.concat(' changed into state: ', state, ' for : ', description, ': ', output);
+			}
+
+			// console.log("title: %s", noteTitle);
+			// console.log("body: %s", noteBody);
+
+			// we should push the message now
+			var pusher = new PushBullet(apikey);
+
+			// // get devices
+			// pusher.devices(function(error, response) {
+			// 	if (error) {
+			// 		console.log("error: %j", error);
+			// 	} else {
+			// 		console.dir(response);
+			// 	}
+			// });
+
+			// push message to given device
+			pusher.note(deviceId, noteTitle, noteBody, function(error, response) {
+				if (error) {
+					console.log("error: %j", error);
+				} else {
+					console.dir(response);
+				}
+			});
+
+		}		
+
+	}
+
+});
