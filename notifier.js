@@ -27,6 +27,7 @@ Host text: "<hostname> changed into state: <state> : <output>"
 // Load modules
 // load pushbullet library
 var PushBullet = require('pushbullet');
+var Pushalot = require('pushalot-node');
 
 // Load optimist, read/parse command line arguments
 var argv = require('optimist')
@@ -101,6 +102,10 @@ addresses.map( function(address) {
 					console.dir(response);
 				}
 			});
+		} else if (service == 'pushalot') {
+			var apiekey = destination;
+			var pushalotClient = new Pushalot(apikey);
+			pushalotClient.push(noteBody,noteTitle);
 		}		
 	}
 });
