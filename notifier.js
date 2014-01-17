@@ -103,9 +103,17 @@ addresses.map( function(address) {
 				}
 			});
 		} else if (service == 'pushalot') {
-			var apiekey = destination;
+			var apikey = destination;
 			var pushalotClient = new Pushalot(apikey);
-			pushalotClient.push(noteBody,noteTitle);
+			pushalotClient.push(noteBody,noteTitle)
+			.on('succes', function ( code , res) {
+				console.log("code: %j", code);
+				console.log("res : %j", res);
+			})
+			.on('error', function (code,res) {
+				console.log("code: %j", code);
+				console.log("res : %j", res);
+			});
 		}		
 	}
 });
